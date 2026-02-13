@@ -154,89 +154,88 @@ const CoverUploader = ({
   };
 
   return isSelecting ? (
-    isUploading ? (
-      <LoadingSpinner className="size-20" />
-    ) : (
       <div style={{ width: "100%" }}>
-        <Tabs variant="buttons">
-          <Tab isSelected={false} asChild className="items-center">
-            <label>
-              <input
-                type="file"
-                multiple
-                accept={ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(",")}
-                disabled={isUploading}
-                onChange={asyncVoid(async (event) => {
-                  if (!event.target.files?.length) return;
+        {isUploading && <LoadingSpinner className="size-20" />}
+        <div style={{ display: isUploading ? "none" : "block" }}>
+          <Tabs variant="buttons">
+            <Tab isSelected={false} asChild className="items-center">
+              <label>
+                <input
+                  type="file"
+                  multiple
+                  accept={ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(",")}
+                  disabled={isUploading}
+                  onChange={asyncVoid(async (event) => {
+                    if (!event.target.files?.length) return;
 
-                  for (const file of event.target.files) {
-                    if (!FileUtils.isFileNameExtensionAllowed(file.name, ALLOWED_EXTENSIONS)) {
-                      showAlert("Invalid file type.", "error");
-                      continue;
-                    }
-                    // TODO change the relevant endpoint(s) to allow uploading multiple files at once
-                    await new Promise<void>((resolve) => {
-                      new DirectUpload(file, "/rails/active_storage/direct_uploads").create((error, blob) => {
-                        if (error) {
-                          showAlert(error.message, "error");
-                        } else {
-                          void saveCover({ type: "file", signedBlobId: blob.signed_id }).finally(resolve);
-                        }
+                    for (const file of event.target.files) {
+                      if (!FileUtils.isFileNameExtensionAllowed(file.name, ALLOWED_EXTENSIONS)) {
+                        showAlert("Invalid file type.", "error");
+                        continue;
+                      }
+                      // TODO change the relevant endpoint(s) to allow uploading multiple files at once
+                      await new Promise<void>((resolve) => {
+                        new DirectUpload(file, "/rails/active_storage/direct_uploads").create((error, blob) => {
+                          if (error) {
+                            showAlert(error.message, "error");
+                          } else {
+                            void saveCover({ type: "file", signedBlobId: blob.signed_id }).finally(resolve);
+                          }
+                        });
                       });
-                    });
-                  }
-                  setIsSelecting(false);
-                })}
-              />
-              <TabIcon name="upload-fill" />
-              Computer files
-            </label>
-          </Tab>
-          <Tab
-            className="items-center"
-            onClick={() =>
-              setUploader((prevUploader) => (prevUploader?.type === "url" ? null : { type: "url", value: "" }))
-            }
-            isSelected={uploader?.type === "url"}
-            aria-controls={`${uid}-url`}
-          >
-            <TabIcon name="link" />
-            External link
-          </Tab>
-        </Tabs>
-        <fieldset
-          role="tabpanel"
-          className="mt-4 rounded-sm border border-border p-4"
-          id={`${uid}-url`}
-          hidden={uploader?.type !== "url"}
-        >
-          {uploader?.type === "url" ? (
-            <div className="flex gap-2">
-              <input
-                type="url"
-                placeholder="https://"
-                value={uploader.value}
-                onChange={(evt) => setUploader({ ...uploader, value: evt.target.value })}
-              />
-              <Button
-                color="primary"
-                onClick={() => {
-                  void saveCover({ type: "url", url: uploader.value }).then(() => {
+                    }
                     setIsSelecting(false);
-                    setUploader(null);
-                  });
-                }}
-                aria-label="Upload"
-              >
-                <Icon name="upload-fill" />
-              </Button>
-            </div>
-          ) : null}
-          <small>We support media from sites such as YouTube, Vimeo, and Soundcloud.</small>
-        </fieldset>
+                  })}
+                />
+                <TabIcon name="upload-fill" />
+                Computer files
+              </label>
+            </Tab>
+            <Tab
+              className="items-center"
+              onClick={() =>
+                setUploader((prevUploader) => (prevUploader?.type === "url" ? null : { type: "url", value: "" }))
+              }
+              isSelected={uploader?.type === "url"}
+              aria-controls={`${uid}-url`}
+            >
+              <TabIcon name="link" />
+              External link
+            </Tab>
+          </Tabs>
+          <fieldset
+            role="tabpanel"
+            className="mt-4 rounded-sm border border-border p-4"
+            id={`${uid}-url`}
+            hidden={uploader?.type !== "url"}
+          >
+            {uploader?.type === "url" ? (
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="https://"
+                  value={uploader.value}
+                  onChange={(evt) => setUploader({ ...uploader, value: evt.target.value })}
+                />
+                <Button
+                  color="primary"
+                  onClick={() => {
+                    void saveCover({ type: "url", url: uploader.value }).then(() => {
+                      setIsSelecting(false);
+                      setUploader(null);
+                    });
+                  }}
+                  aria-label="Upload"
+                >
+                  <Icon name="upload-fill" />
+                </Button>
+              </div>
+            ) : null}
+            <small>We support media from sites such as YouTube, Vimeo, and Soundcloud.</small>
+          </fieldset>
+        </div>
       </div>
-    )
-  ) : (
+    ) : (
     <>
       <Button color="primary" onClick={() => setIsSelecting(true)}>
         <Icon name="upload-fill" /> Upload images or videos
