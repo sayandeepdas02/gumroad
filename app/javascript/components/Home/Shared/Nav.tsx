@@ -171,7 +171,7 @@ export const HomeNav = () => {
     { href: Routes.pricing_path(), label: "Pricing" },
     { href: Routes.features_path(), label: "Features" },
     { href: Routes.about_path(), label: "About" },
-    { href: Routes.careers_path(), label: "Careers" },
+    { href: Routes.careers_path(), label: "Jobs" },
   ];
 
   return (
